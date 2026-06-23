@@ -1,0 +1,64 @@
+pipeline {
+agent {
+label 'ec2-agent'
+}
+
+```
+stages {
+
+    stage('Checkout Code') {
+        steps {
+            git url: 'https://github.com/kris9887/pipeline_code_testing-.git'
+        }
+    }
+
+    stage('Install Dependencies') {
+        steps {
+            sh '''
+            python3 -m pip install --upgrade pip
+            python3 -m pip install pytest pytest-cov
+            '''
+        }
+    }
+
+    stage('Unit & Integration Testing') {
+        steps {
+            sh 'pytest test_app.py -v'
+        }
+    }
+
+    stage('Code Coverage') {
+        steps {
+            sh 'pytest --cov=app test_app.py --cov-report=term-missing'
+        }
+    }
+
+    stage('Static Code Analysis (SonarQube)') {
+        steps {
+            echo 'Running SonarQube Analysis'
+        }
+    }
+
+    stage('Quality Gate') {
+        steps {
+            echo 'Checking Quality Gate Status'
+        }
+    }
+}
+
+post {
+    always {
+        echo 'Pipeline Execution Completed'
+    }
+
+    success {
+        echo 'All Tests Passed'
+    }
+
+    failure {
+        echo 'Pipeline Failed'
+    }
+}
+```
+
+}
